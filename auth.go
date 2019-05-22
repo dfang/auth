@@ -6,8 +6,8 @@ import (
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/jinzhu/gorm"
-	"github.com/qor/auth/auth_identity"
-	"github.com/qor/auth/claims"
+	"github.com/dfang/auth/auth_identity"
+	"github.com/dfang/auth/claims"
 	"github.com/qor/mailer"
 	"github.com/qor/mailer/logger"
 	"github.com/qor/redirect_back"
@@ -25,9 +25,9 @@ type Auth struct {
 
 // Config auth config
 type Config struct {
-	// Default Database, which will be used in Auth when do CRUD, you can change a request's DB isntance by setting request Context's value, refer https://github.com/qor/auth/blob/master/utils.go#L32
+	// Default Database, which will be used in Auth when do CRUD, you can change a request's DB isntance by setting request Context's value, refer https://github.com/dfang/auth/blob/master/utils.go#L32
 	DB *gorm.DB
-	// AuthIdentityModel a model used to save auth info, like email/password, OAuth token, linked user's ID, https://github.com/qor/auth/blob/master/auth_identity/auth_identity.go is the default implemention
+	// AuthIdentityModel a model used to save auth info, like email/password, OAuth token, linked user's ID, https://github.com/dfang/auth/blob/master/auth_identity/auth_identity.go is the default implemention
 	AuthIdentityModel interface{}
 	// UserModel should be point of user struct's instance, it could be nil, then Auth will assume there is no user linked to auth info, and will return current auth info when get current user
 	UserModel interface{}
@@ -47,11 +47,11 @@ type Config struct {
 	// Redirector redirect user to a new page after registered, logged, confirmed...
 	Redirector RedirectorInterface
 
-	// LoginHandler defined behaviour when request `{Auth Prefix}/login`, default behaviour defined in http://godoc.org/github.com/qor/auth#pkg-variables
+	// LoginHandler defined behaviour when request `{Auth Prefix}/login`, default behaviour defined in http://godoc.org/github.com/dfang/auth#pkg-variables
 	LoginHandler func(*Context, func(*Context) (*claims.Claims, error))
-	// RegisterHandler defined behaviour when request `{Auth Prefix}/register`, default behaviour defined in http://godoc.org/github.com/qor/auth#pkg-variables
+	// RegisterHandler defined behaviour when request `{Auth Prefix}/register`, default behaviour defined in http://godoc.org/github.com/dfang/auth#pkg-variables
 	RegisterHandler func(*Context, func(*Context) (*claims.Claims, error))
-	// LogoutHandler defined behaviour when request `{Auth Prefix}/logout`, default behaviour defined in http://godoc.org/github.com/qor/auth#pkg-variables
+	// LogoutHandler defined behaviour when request `{Auth Prefix}/logout`, default behaviour defined in http://godoc.org/github.com/dfang/auth#pkg-variables
 	LogoutHandler func(*Context)
 }
 
@@ -116,7 +116,7 @@ func New(config *Config) *Auth {
 		config.Render.RegisterViewPath(viewPath)
 	}
 
-	config.Render.RegisterViewPath("github.com/qor/auth/views")
+	config.Render.RegisterViewPath("github.com/dfang/auth/views")
 
 	auth := &Auth{Config: config}
 
