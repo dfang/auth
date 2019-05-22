@@ -92,7 +92,11 @@ func New(config *Config) *GithubProvider {
 				authInfo.Provider = provider.GetName()
 				authInfo.UID = fmt.Sprint(*user.ID)
 
-				if !tx.Model(authIdentity).Where(authInfo).Scan(&authInfo).RecordNotFound() {
+				if !tx.Model(authIdentity).Where(
+					map[string]interface{}{
+						"provider": authInfo.Provider,
+						"uid":      authInfo.UID,
+					}).Scan(&authInfo).RecordNotFound() {
 					return authInfo.ToClaims(), nil
 				}
 
@@ -112,7 +116,11 @@ func New(config *Config) *GithubProvider {
 					return nil, err
 				}
 
-				if err = tx.Where(authInfo).FirstOrCreate(authIdentity).Error; err == nil {
+				if err = tx.Where(
+					map[string]interface{}{
+						"provider": authInfo.Provider,
+						"uid":      authInfo.UID,
+					}).FirstOrCreate(authIdentity).Error; err == nil {
 					return authInfo.ToClaims(), nil
 				}
 				return nil, err

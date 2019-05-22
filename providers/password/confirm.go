@@ -78,7 +78,11 @@ var DefaultConfirmHandler = func(context *auth.Context) error {
 			authInfo.UID = claims.Id
 			authIdentity := reflect.New(utils.ModelType(context.Auth.Config.AuthIdentityModel)).Interface()
 
-			if tx.Where(authInfo).First(authIdentity).RecordNotFound() {
+			if tx.Where(
+				map[string]interface{}{
+					"provider": authInfo.Provider,
+					"uid":      authInfo.UID,
+				}).First(authIdentity).RecordNotFound() {
 				err = auth.ErrInvalidAccount
 			}
 
