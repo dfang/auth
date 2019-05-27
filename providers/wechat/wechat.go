@@ -21,18 +21,6 @@ import (
 	"github.com/chanxuehong/wechat/oauth2"
 )
 
-// var (
-// 	AuthorizeURL = "https://github.com/login/oauth/authorize"
-// 	TokenURL     = "https://github.com/login/oauth/access_token"
-// )
-
-// const (
-// 	wxAppId           = "wx56463c3ba7c843d8"                            // 填上自己的参数
-// 	wxAppSecret       = "343937be9a016cc2393d59116847a891"              // 填上自己的参数
-// 	oauth2RedirectURI = "http://be750378.ngrok.io/auth/wechat/callback" // 填上自己的参数
-// 	oauth2Scope       = "snsapi_userinfo"                               // 填上自己的参数
-// )
-
 var (
 	sessionStorage = session.New(20*60, 60*60)
 	oauth2Endpoint oauth2.Endpoint
@@ -45,21 +33,11 @@ type WechatProvider struct {
 
 // Config github Config
 type Config struct {
-	// wx56463c3ba7c843d8
-	// 343937be9a016cc2393d59116847a891
-	// appID
-	// appsecret
-	AppID       string
-	AppSecret   string
-	RedirectURL string
-	Scope       string
-	// ClientID     string
-	// ClientSecret string
-	// AuthorizeURL string
-	// TokenURL     string
-	// RedirectURL  string
+	AppID            string
+	AppSecret        string
+	RedirectURL      string
+	Scope            string
 	AuthorizeHandler func(*auth.Context) (*claims.Claims, error)
-	// Scopes []string
 }
 
 func New(config *Config) *WechatProvider {
@@ -75,6 +53,14 @@ func New(config *Config) *WechatProvider {
 
 	if config.AppSecret == "" {
 		panic(errors.New("Wechat's AppSecret can't be blank"))
+	}
+
+	if config.RedirectURL == "" {
+		panic(errors.New("Wechat's RedirectURL can't be blank"))
+	}
+
+	if config.Scope == "" {
+		config.Scope = "snsapi_userinfo"
 	}
 
 	oauth2Endpoint = mpoauth2.NewEndpoint(config.AppID, config.AppSecret)
@@ -169,19 +155,6 @@ func New(config *Config) *WechatProvider {
 				}).Scan(&authInfo).RecordNotFound() {
 				return authInfo.ToClaims(), nil
 			}
-			// OpenId   string `json:"openid"`   // 用户的唯一标识
-			// 	Nickname string `json:"nickname"` // 用户昵称
-			// 	Sex      int    `json:"sex"`      // 用户的性别, 值为1时是男性, 值为2时是女性, 值为0时是未知
-			// 	City     string `json:"city"`     // 普通用户个人资料填写的城市
-			// 	Province string `json:"province"` // 用户个人资料填写的省份
-			// 	Country  string `json:"country"`  // 国家, 如中国为CN
-
-			// 	// 用户头像，最后一个数值代表正方形头像大小（有0、46、64、96、132数值可选，0代表640*640正方形头像），
-			// 	// 用户没有头像时该项为空。若用户更换头像，原有头像URL将失效。
-			// 	HeadImageURL string `json:"headimgurl,omitempty"`
-
-			// 	Privilege []string `json:"privilege,omitempty"` // 用户特权信息，json 数组，如微信沃卡用户为（chinaunicom）
-			//   UnionId   string   `json:"uni
 
 			{
 				schema.Provider = provider.GetName()
