@@ -14,7 +14,7 @@ import (
 // DefaultAuthorizeHandler default authorize handler
 var DefaultAuthorizeHandler = func(context *auth.Context) (*claims.Claims, error) {
 	var (
-		authInfo    auth_identity.Basic
+		authInfo    auth_identity.AuthIdentity
 		req         = context.Request
 		tx          = context.Auth.GetDB(req)
 		provider, _ = context.Provider.(*Provider)
@@ -24,11 +24,7 @@ var DefaultAuthorizeHandler = func(context *auth.Context) (*claims.Claims, error
 	authInfo.Provider = provider.GetName()
 	authInfo.UID = strings.TrimSpace(req.Form.Get("login"))
 
-	if tx.Model(context.Auth.AuthIdentityModel).Where(
-		map[string]interface{}{
-			"provider": authInfo.Provider,
-			"uid":      authInfo.UID,
-		}).Scan(&authInfo).RecordNotFound() {
+	if tx.Model(context.Auth.AuthIdentityModel).Where(authInfo).Scan(&authInfo).RecordNotFound() {
 		return nil, auth.ErrInvalidAccount
 	}
 
@@ -52,7 +48,7 @@ var DefaultRegisterHandler = func(context *auth.Context) (*claims.Claims, error)
 		err         error
 		currentUser interface{}
 		schema      auth.Schema
-		authInfo    auth_identity.Basic
+		authInfo    auth_identity.AuthIdentity
 		req         = context.Request
 		tx          = context.Auth.GetDB(req)
 		provider, _ = context.Provider.(*Provider)
@@ -70,11 +66,7 @@ var DefaultRegisterHandler = func(context *auth.Context) (*claims.Claims, error)
 	authInfo.Provider = provider.GetName()
 	authInfo.UID = strings.TrimSpace(req.Form.Get("login"))
 
-	if !tx.Model(context.Auth.AuthIdentityModel).Where(
-		map[string]interface{}{
-			"provider": authInfo.Provider,
-			"uid":      authInfo.UID,
-		}).Scan(&authInfo).RecordNotFound() {
+	if !tx.Model(context.Auth.AuthIdentityModel).Where(authInfo).Scan(&authInfo).RecordNotFound() {
 		return nil, auth.ErrInvalidAccount
 	}
 
@@ -91,11 +83,7 @@ var DefaultRegisterHandler = func(context *auth.Context) (*claims.Claims, error)
 
 		// create auth identity
 		authIdentity := reflect.New(utils.ModelType(context.Auth.Config.AuthIdentityModel)).Interface()
-		if err = tx.Where(
-			map[string]interface{}{
-				"provider": authInfo.Provider,
-				"uid":      authInfo.UID,
-			}).FirstOrCreate(authIdentity).Error; err == nil {
+		if err = tx.Where(authInfo).FirstOrCreate(authIdentity).Error; err == nil {
 			if provider.Config.Confirmable {
 				context.SessionStorer.Flash(context.Writer, req, session.Message{Message: ConfirmFlashMessage, Type: "success"})
 				err = provider.Config.ConfirmMailer(schema.Email, context, authInfo.ToClaims(), currentUser)

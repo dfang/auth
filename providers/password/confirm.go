@@ -64,7 +64,7 @@ var DefaultConfirmationMailer = func(email string, context *auth.Context, claims
 // DefaultConfirmHandler default confirm handler
 var DefaultConfirmHandler = func(context *auth.Context) error {
 	var (
-		authInfo    auth_identity.Basic
+		authInfo    auth_identity.AuthIdentity
 		provider, _ = context.Provider.(*Provider)
 		tx          = context.Auth.GetDB(context.Request)
 		token       = context.Request.URL.Query().Get("token")
@@ -78,11 +78,7 @@ var DefaultConfirmHandler = func(context *auth.Context) error {
 			authInfo.UID = claims.Id
 			authIdentity := reflect.New(utils.ModelType(context.Auth.Config.AuthIdentityModel)).Interface()
 
-			if tx.Where(
-				map[string]interface{}{
-					"provider": authInfo.Provider,
-					"uid":      authInfo.UID,
-				}).First(authIdentity).RecordNotFound() {
+			if tx.Where(authInfo).First(authIdentity).RecordNotFound() {
 				err = auth.ErrInvalidAccount
 			}
 
