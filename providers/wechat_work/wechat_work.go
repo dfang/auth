@@ -165,7 +165,7 @@ func (provider WechatWorkProvider) ConfigAuth(*auth.Auth) {
 
 // Login implemented login with wechat provider
 func (provider WechatWorkProvider) Login(context *auth.Context) {
-	AuthCodeURL := buildAuthCodeURL(provider.Config.AuthType)
+	AuthCodeURL := provider.buildAuthCodeURL()
 	// claims := claims.Claims{}
 	// claims.Subject = "state"
 	// signedToken := context.Auth.SessionStorer.SignedToken(&claims)
@@ -194,15 +194,16 @@ func (provider WechatWorkProvider) Callback(context *auth.Context) {
 func (WechatWorkProvider) ServeHTTP(*auth.Context) {
 }
 
-func (config *Config) buildAuthCodeURL(authType string) string {
+func (provider WechatWorkProvider) buildAuthCodeURL() string {
 	// https://work.weixin.qq.com/api/doc#90000/90135/91019
 	// https://work.weixin.qq.com/api/doc#90000/90135/91019
 
-	if authType != "scan" || authType != "web" {
+	authType := provider.Config.AuthType
+	if !(authType == "scan" || authType == "web") {
 		panic("请正确配置authType, 不同的认证方式使用的获取身份信息的URL不同")
 	}
-
 	var AuthCodeURL string
+	config := provider.Config
 
 	if authType == "scan" {
 		AuthCodeURL = fmt.Sprintf("https://open.work.weixin.qq.com/wwopen/sso/qrConnect?appid=%s&agentid=%d&redirect_uri=%s&state=%s", config.CorpID, config.AgentID, config.RedirectURI, config.State)
