@@ -54,7 +54,7 @@ func New(config *Config) *WechatWorkProvider {
 	if config.AuthType == "" {
 		config.AuthType = "scan"
 	} else {
-		if !(config.AuthType == "scan" || config.AuthType == "web") {
+		if config.AuthType != "scan" && config.AuthType != "web" {
 			panic("请正确配置authType, 不同的认证方式使用的获取身份信息的URL不同")
 		}
 	}
