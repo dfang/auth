@@ -3,13 +3,14 @@ package facebook
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"reflect"
 
-	"github.com/dfang/auth"
-	"github.com/dfang/auth/auth_identity"
-	"github.com/dfang/auth/claims"
+	"github.com/qor/auth"
+	"github.com/qor/auth/auth_identity"
+	"github.com/qor/auth/claims"
 	"github.com/qor/qor/utils"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/facebook"
@@ -65,7 +66,7 @@ func New(config *Config) *FacebookProvider {
 			var (
 				req          = context.Request
 				schema       auth.Schema
-				authInfo     auth_identity.Basic
+				authInfo     auth_identity.AuthIdentity
 				tx           = context.Auth.GetDB(req)
 				authIdentity = reflect.New(utils.ModelType(context.Auth.Config.AuthIdentityModel)).Interface()
 			)
@@ -86,17 +87,19 @@ func New(config *Config) *FacebookProvider {
 				}
 
 				{
-					resp, err := http.Get("https://graph.facebook.com/me?access_token=" + tkn.AccessToken)
+					resp, err := http.Get("https://graph.facebook.com/me?fields=id,name,first_name,last_name,picture,link,email,gender,locale,verified&access_token=" + tkn.AccessToken)
 					if err != nil {
 						return nil, err
 					}
 
 					defer resp.Body.Close()
 					body, _ := ioutil.ReadAll(resp.Body)
+					response_json := string(body)
+					fmt.Println(response_json)
 					userInfo := UserInfo{}
 					json.Unmarshal(body, &userInfo)
 					schema.Provider = provider.GetName()
-					schema.UID = userInfo.ID
+					schema.UID = userInfo.Email
 					schema.Email = userInfo.Email
 					schema.FirstName = userInfo.GivenName
 					schema.LastName = userInfo.FamilyName
@@ -108,11 +111,7 @@ func New(config *Config) *FacebookProvider {
 				authInfo.Provider = provider.GetName()
 				authInfo.UID = schema.UID
 
-				if !tx.Model(authIdentity).Where(
-					map[string]interface{}{
-						"provider": authInfo.Provider,
-						"uid":      authInfo.UID,
-					}).Scan(&authInfo).RecordNotFound() {
+				if !tx.Model(authIdentity).Where(authInfo).Scan(&authInfo).RecordNotFound() {
 					return authInfo.ToClaims(), nil
 				}
 
@@ -124,11 +123,7 @@ func New(config *Config) *FacebookProvider {
 					return nil, err
 				}
 
-				if err = tx.Where(
-					map[string]interface{}{
-						"provider": authInfo.Provider,
-						"uid":      authInfo.UID,
-					}).FirstOrCreate(authIdentity).Error; err == nil {
+				if err = tx.Where(authInfo).FirstOrCreate(authIdentity).Error; err == nil {
 					return authInfo.ToClaims(), nil
 				}
 			}
@@ -146,7 +141,7 @@ func (FacebookProvider) GetName() string {
 
 // ConfigAuth config auth
 func (provider FacebookProvider) ConfigAuth(auth *auth.Auth) {
-	auth.Render.RegisterViewPath("github.com/dfang/auth/providers/facebook/views")
+	auth.Render.RegisterViewPath("github.com/qor/auth/providers/facebook/views")
 }
 
 // OAuthConfig return oauth config based on configuration

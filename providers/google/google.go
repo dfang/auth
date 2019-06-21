@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"reflect"
 
-	"github.com/dfang/auth"
-	"github.com/dfang/auth/auth_identity"
-	"github.com/dfang/auth/claims"
+	"github.com/qor/auth"
+	"github.com/qor/auth/auth_identity"
+	"github.com/qor/auth/claims"
 	"github.com/qor/qor/utils"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -65,7 +65,7 @@ func New(config *Config) *GoogleProvider {
 			var (
 				req          = context.Request
 				schema       auth.Schema
-				authInfo     auth_identity.Basic
+				authInfo     auth_identity.AuthIdentity
 				tx           = context.Auth.GetDB(req)
 				authIdentity = reflect.New(utils.ModelType(context.Auth.Config.AuthIdentityModel)).Interface()
 			)
@@ -109,11 +109,7 @@ func New(config *Config) *GoogleProvider {
 				authInfo.Provider = provider.GetName()
 				authInfo.UID = schema.UID
 
-				if !tx.Model(authIdentity).Where(
-					map[string]interface{}{
-						"provider": authInfo.Provider,
-						"uid":      authInfo.UID,
-					}).Scan(&authInfo).RecordNotFound() {
+				if !tx.Model(authIdentity).Where(authInfo).Scan(&authInfo).RecordNotFound() {
 					return authInfo.ToClaims(), nil
 				}
 
@@ -125,11 +121,7 @@ func New(config *Config) *GoogleProvider {
 					return nil, err
 				}
 
-				if err = tx.Where(
-					map[string]interface{}{
-						"provider": authInfo.Provider,
-						"uid":      authInfo.UID,
-					}).FirstOrCreate(authIdentity).Error; err == nil {
+				if err = tx.Where(authInfo).FirstOrCreate(authIdentity).Error; err == nil {
 					return authInfo.ToClaims(), nil
 				}
 			}

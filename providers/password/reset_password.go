@@ -9,9 +9,9 @@ import (
 
 	"html/template"
 
-	"github.com/dfang/auth"
-	"github.com/dfang/auth/auth_identity"
-	"github.com/dfang/auth/claims"
+	"github.com/qor/auth"
+	"github.com/qor/auth/auth_identity"
+	"github.com/qor/auth/claims"
 	"github.com/qor/mailer"
 	"github.com/qor/qor/utils"
 	"github.com/qor/session"
@@ -62,7 +62,7 @@ var DefaultRecoverPasswordHandler = func(context *auth.Context) error {
 	context.Request.ParseForm()
 
 	var (
-		authInfo    auth_identity.Basic
+		authInfo    auth_identity.AuthIdentity
 		email       = context.Request.Form.Get("email")
 		provider, _ = context.Provider.(*Provider)
 	)
@@ -90,7 +90,7 @@ var DefaultResetPasswordHandler = func(context *auth.Context) error {
 	context.Request.ParseForm()
 
 	var (
-		authInfo    auth_identity.Basic
+		authInfo    auth_identity.AuthIdentity
 		token       = context.Request.Form.Get("reset_password_token")
 		provider, _ = context.Provider.(*Provider)
 		tx          = context.Auth.GetDB(context.Request)
@@ -104,11 +104,7 @@ var DefaultResetPasswordHandler = func(context *auth.Context) error {
 			authInfo.UID = claims.Id
 			authIdentity := reflect.New(utils.ModelType(context.Auth.Config.AuthIdentityModel)).Interface()
 
-			if tx.Where(
-				map[string]interface{}{
-					"provider": authInfo.Provider,
-					"uid":      authInfo.UID,
-				}).First(authIdentity).RecordNotFound() {
+			if tx.Where(authInfo).First(authIdentity).RecordNotFound() {
 				return auth.ErrInvalidAccount
 			}
 

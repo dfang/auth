@@ -9,9 +9,9 @@ import (
 	"reflect"
 
 	"github.com/mrjones/oauth"
-	"github.com/dfang/auth"
-	"github.com/dfang/auth/auth_identity"
-	"github.com/dfang/auth/claims"
+	"github.com/qor/auth"
+	"github.com/qor/auth/auth_identity"
+	"github.com/qor/auth/claims"
 	"github.com/qor/qor/utils"
 	"github.com/qor/session"
 )
@@ -52,7 +52,7 @@ func New(config *Config) *Provider {
 	if config.AuthorizeHandler == nil {
 		config.AuthorizeHandler = func(context *auth.Context) (*claims.Claims, error) {
 			var (
-				authInfo     auth_identity.Basic
+				authInfo     auth_identity.AuthIdentity
 				schema       auth.Schema
 				requestToken = &oauth.RequestToken{}
 				consumer     = provider.NewConsumer(context)
@@ -104,11 +104,7 @@ func New(config *Config) *Provider {
 			authInfo.Provider = provider.GetName()
 			authInfo.UID = schema.UID
 
-			if !tx.Model(authIdentity).Where(
-				map[string]interface{}{
-					"provider": authInfo.Provider,
-					"uid":      authInfo.UID,
-				}).Scan(&authInfo).RecordNotFound() {
+			if !tx.Model(authIdentity).Where(authInfo).Scan(&authInfo).RecordNotFound() {
 				return authInfo.ToClaims(), nil
 			}
 
@@ -120,11 +116,7 @@ func New(config *Config) *Provider {
 				return nil, err
 			}
 
-			if err = tx.Where(
-				map[string]interface{}{
-					"provider": authInfo.Provider,
-					"uid":      authInfo.UID,
-				}).FirstOrCreate(authIdentity).Error; err == nil {
+			if err = tx.Where(authInfo).FirstOrCreate(authIdentity).Error; err == nil {
 				return authInfo.ToClaims(), nil
 			}
 
@@ -143,7 +135,7 @@ func (Provider) GetName() string {
 // ConfigAuth config auth
 func (provider *Provider) ConfigAuth(auth *auth.Auth) {
 	provider.Auth = auth
-	provider.Auth.Render.RegisterViewPath("github.com/dfang/auth/providers/twitter/views")
+	provider.Auth.Render.RegisterViewPath("github.com/qor/auth/providers/twitter/views")
 }
 
 // NewConsumer new twitter consumer

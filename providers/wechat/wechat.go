@@ -9,9 +9,9 @@ import (
 	"net/url"
 	"reflect"
 
-	"github.com/dfang/auth"
-	"github.com/dfang/auth/auth_identity"
-	"github.com/dfang/auth/claims"
+	"github.com/qor/auth"
+	"github.com/qor/auth/auth_identity"
+	"github.com/qor/auth/claims"
 	"github.com/qor/qor/utils"
 
 	"github.com/chanxuehong/rand"
@@ -26,7 +26,7 @@ var (
 	oauth2Endpoint oauth2.Endpoint
 )
 
-// GithubProvider provide login with github method
+// WechatProvider provide login with Wechat 网页授权
 type WechatProvider struct {
 	*Config
 }
@@ -69,7 +69,7 @@ func New(config *Config) *WechatProvider {
 		config.AuthorizeHandler = func(context *auth.Context) (*claims.Claims, error) {
 			var (
 				schema       auth.Schema
-				authInfo     auth_identity.Basic
+				authInfo     auth_identity.AuthIdentity
 				authIdentity = reflect.New(utils.ModelType(context.Auth.Config.AuthIdentityModel)).Interface()
 				req          = context.Request
 				tx           = context.Auth.GetDB(req)

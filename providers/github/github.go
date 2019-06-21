@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"reflect"
 
-	"github.com/dfang/auth"
-	"github.com/dfang/auth/auth_identity"
-	"github.com/dfang/auth/claims"
 	"github.com/google/go-github/github"
+	"github.com/qor/auth"
+	"github.com/qor/auth/auth_identity"
+	"github.com/qor/auth/claims"
 	"github.com/qor/qor/utils"
 	"golang.org/x/oauth2"
 )
@@ -62,7 +62,7 @@ func New(config *Config) *GithubProvider {
 		config.AuthorizeHandler = func(context *auth.Context) (*claims.Claims, error) {
 			var (
 				schema       auth.Schema
-				authInfo     auth_identity.Basic
+				authInfo     auth_identity.AuthIdentity
 				authIdentity = reflect.New(utils.ModelType(context.Auth.Config.AuthIdentityModel)).Interface()
 				req          = context.Request
 				tx           = context.Auth.GetDB(req)
@@ -92,11 +92,7 @@ func New(config *Config) *GithubProvider {
 				authInfo.Provider = provider.GetName()
 				authInfo.UID = fmt.Sprint(*user.ID)
 
-				if !tx.Model(authIdentity).Where(
-					map[string]interface{}{
-						"provider": authInfo.Provider,
-						"uid":      authInfo.UID,
-					}).Scan(&authInfo).RecordNotFound() {
+				if !tx.Model(authIdentity).Where(authInfo).Scan(&authInfo).RecordNotFound() {
 					return authInfo.ToClaims(), nil
 				}
 
@@ -116,11 +112,7 @@ func New(config *Config) *GithubProvider {
 					return nil, err
 				}
 
-				if err = tx.Where(
-					map[string]interface{}{
-						"provider": authInfo.Provider,
-						"uid":      authInfo.UID,
-					}).FirstOrCreate(authIdentity).Error; err == nil {
+				if err = tx.Where(authInfo).FirstOrCreate(authIdentity).Error; err == nil {
 					return authInfo.ToClaims(), nil
 				}
 				return nil, err

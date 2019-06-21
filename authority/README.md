@@ -10,12 +10,12 @@ It is based on [Roles](http://github.com/qor/roles), means to define an ability,
 
 ### Initialize Authority
 
-Authority could use with [Auth](http://github.com/dfang/auth) to get current user, handle sessions, you could use it, or implement your own [AuthInterface](http://godoc.org/github.com/dfang/auth/authority#AuthInterface)
+Authority could use with [Auth](http://github.com/qor/auth) to get current user, handle sessions, you could use it, or implement your own [AuthInterface](http://godoc.org/github.com/qor/auth/authority#AuthInterface)
 
 ```go
 import (
-  "github.com/dfang/auth"
-  "github.com/dfang/auth/authority"
+  "github.com/qor/auth"
+  "github.com/qor/auth/authority"
   "github.com/qor/roles"
 )
 
@@ -47,7 +47,7 @@ You might have some requirements like time based authorization, for example:
 * I get distracted, come back to the site in 2 hours, then no access to my account details page, but still be able to visit shopping cart
 * When place an order, I have to been authorized less than 60 minutes
 
-Authority provides some [Rules](http://godoc.org/github.com/dfang/auth/authority#Rule) to make you define them easily, used like:
+Authority provides some [Rules](http://godoc.org/github.com/qor/auth/authority#Rule) to make you define them easily, used like:
 
 ```go
 Authority.Register("access_account_pages", authority.Rule{
