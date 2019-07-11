@@ -59,8 +59,12 @@ func New(config *Config) *WechatWorkProvider {
 		}
 	}
 
-	provider := &WechatWorkProvider{Config: config}
+	if config.RedirectURI == "" {
+		// config.RedirectURI = scheme + req.Host + context.Auth.AuthURL("wechat_work/callback")
+		panic("请正确配置RedirectURI, 不同的认证方式使用的获取身份信息的URL不同")
+	}
 
+	provider := &WechatWorkProvider{Config: config}
 	if config.AuthorizeHandler == nil {
 		config.AuthorizeHandler = func(context *auth.Context) (*claims.Claims, error) {
 			var (
@@ -165,7 +169,6 @@ func (provider WechatWorkProvider) Login(context *auth.Context) {
 
 	// url := provider.OAuthConfig(context).AuthCodeURL(signedToken)
 	// http.Redirect(context.Writer, context.Request, url, http.StatusFound)
-
 	http.Redirect(context.Writer, context.Request, AuthCodeURL, http.StatusFound)
 }
 
@@ -190,7 +193,6 @@ func (WechatWorkProvider) ServeHTTP(*auth.Context) {
 func (provider WechatWorkProvider) buildAuthCodeURL(context *auth.Context) string {
 	// https://work.weixin.qq.com/api/doc#90000/90135/91019
 	// https://work.weixin.qq.com/api/doc#90000/90135/91019
-
 	var (
 		req         = context.Request
 		scheme      = req.URL.Scheme
@@ -202,7 +204,7 @@ func (provider WechatWorkProvider) buildAuthCodeURL(context *auth.Context) strin
 	}
 
 	config := provider.Config
-	config.RedirectURI = scheme + req.Host + context.Auth.AuthURL("wechat_work/callback")
+	// config.RedirectURI = scheme + req.Host + context.Auth.AuthURL("wechat_work/callback")
 
 	if config.AuthType == "scan" {
 		AuthCodeURL = fmt.Sprintf("https://open.work.weixin.qq.com/wwopen/sso/qrConnect?appid=%s&agentid=%d&redirect_uri=%s&state=%s", config.CorpID, config.AgentID, config.RedirectURI, config.State)
