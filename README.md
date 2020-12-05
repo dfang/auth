@@ -1,4 +1,6 @@
 # Auth
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fdfang%2Fauth.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fdfang%2Fauth?ref=badge_shield)
+
 
 Auth is a modular authentication system for web development in Golang, it provides different authentication backends to accelerate your development.
 
@@ -194,3 +196,7 @@ Check Auth Theme's [document](https://github.com/dfang/auth_themes) for How To u
 `Authentication` is the process of verifying who you are, `Authorization` is the process of verifying that you have access to something.
 
 Auth package not only provides `Authentication`, but also `Authorization`, please checkout [authority](https://github.com/dfang/auth/tree/master/authority) for more details
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fdfang%2Fauth.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fdfang%2Fauth?ref=badge_large)
